@@ -97,7 +97,7 @@ def setup_round():
     st.session_state.feedback_shown = False
     st.session_state.used_prompts.append(prompt)
 
-max_rounds = 5
+max_rounds = 10
 
 # Setup first round
 if st.session_state.current_prompt is None and st.session_state.round <= max_rounds:
