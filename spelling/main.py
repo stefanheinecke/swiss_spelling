@@ -1,8 +1,8 @@
 import streamlit as st
 import random
 import time
+from datetime import datetime, timezone, timedelta
 from google.cloud import bigquery
-import os
 
 # Word bank: prompt → correct + distractors
 word_bank = {
@@ -156,7 +156,7 @@ def setup_round():
     st.session_state.feedback_shown = False
     st.session_state.used_prompts.append(prompt)
 
-max_rounds = 10
+max_rounds = 2
 
 # Setup first round
 if st.session_state.current_prompt is None and st.session_state.round <= max_rounds:
@@ -168,6 +168,17 @@ st.markdown(
 )
 
 st.title("Swiss German Quiz")
+
+if "game_started" not in st.session_state:
+    st.session_state.game_started = False
+
+if not st.session_state.game_started:
+    if st.button("▶️ Spiel starten"):
+        st.session_state.game_started = True
+        st.session_state.start_time = time.time()
+        st.rerun()
+    else:
+        st.stop()  # Prevent rest of app from running until started
 
 current_display_round = min(st.session_state.round, max_rounds)
 st.markdown(f"**Punkte:** {st.session_state.score} (Frage {current_display_round} von {max_rounds})")
@@ -203,8 +214,32 @@ if st.session_state.round <= max_rounds and st.session_state.current_prompt is n
                 setup_round()
                 st.rerun()
 
+def save_result_to_bigquery():
+    end_time = time.time()
+    raw_seconds = round(end_time - st.session_state.start_time)
+    duration_str = str(timedelta(seconds=raw_seconds))  # e.g. '0:00:35'
+    row = {
+        "user": st.session_state.player_name,
+        "animal": st.session_state.animal,
+        "percentage": int((st.session_state.score / (max_rounds * 10)) * 100),
+        "required_time": duration_str,
+        "run_date": datetime.now(timezone.utc).date().isoformat()
+    }
+    st.markdown(row)
+    st.markdown(f"{project_id}.{dataset_id}.{table_id}")
+    errors = client.insert_rows_json(f"{project_id}.{dataset_id}.{table_id}", [row])
+    if errors:
+        st.error(errors)
+        st.error("❌ Fehler beim Speichern in BigQuery")
+    else:
+        st.success("✅ Ergebnis gespeichert!")
+
 # End of game
 if st.session_state.round > max_rounds:
+    if "result_saved" not in st.session_state:
+        save_result_to_bigquery()
+    st.session_state.result_saved = True
+
     st.header("🏁 Spiel vorbei")
     st.markdown(f"**Punkte:** {st.session_state.score}")
 
