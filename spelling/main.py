@@ -97,8 +97,10 @@ def setup_round():
     st.session_state.feedback_shown = False
     st.session_state.used_prompts.append(prompt)
 
+max_rounds = 5
+
 # Setup first round
-if st.session_state.current_prompt is None and st.session_state.round <= 5:
+if st.session_state.current_prompt is None and st.session_state.round <= max_rounds:
     setup_round()
 
 st.markdown(
@@ -107,10 +109,12 @@ st.markdown(
 )
 
 st.title("Swiss German Quiz")
-st.markdown(f"**Punkte:** {st.session_state.score} (Frage {st.session_state.round} von 5)")
+
+current_display_round = min(st.session_state.round, max_rounds)
+st.markdown(f"**Punkte:** {st.session_state.score} (Frage {current_display_round} von {max_rounds})")
 
 # Game loop
-if st.session_state.round <= 5:
+if st.session_state.round <= max_rounds and st.session_state.current_prompt is not None:
     st.markdown(
         f"<h2 style='text-align: center; font-size: 36px;'>{st.session_state.current_prompt}</h2>",
         unsafe_allow_html=True
@@ -140,7 +144,7 @@ if st.session_state.round <= 5:
                 st.rerun()
 
 # End of game
-if st.session_state.round > 5:
+if st.session_state.round > max_rounds:
     st.header("🏁 Spiel vorbei")
     st.markdown(f"**Punkte:** {st.session_state.score}")
 
