@@ -121,7 +121,6 @@ def fetch_leaderboard():
     """
     return client.query(query).to_dataframe()
 
-
 def show_leaderboard():
     df = fetch_leaderboard()
     df["Ergebnis"] = df["percentage"].astype(str)
@@ -209,7 +208,7 @@ if st.session_state.round <= max_rounds and st.session_state.current_prompt is n
             st.session_state.history.append((st.session_state.current_prompt, option))
 
             with st.empty():
-                time.sleep(2)
+                time.sleep(1)
                 st.session_state.round += 1
                 setup_round()
                 st.rerun()
