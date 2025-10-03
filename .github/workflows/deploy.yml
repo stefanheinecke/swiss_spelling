@@ -28,14 +28,14 @@ jobs:
         run: |
           gcloud auth configure-docker ${{ secrets.GCP_ARTIFACT_REGION }}-docker.pkg.dev
 
-      - name: Build Streamlit image
+      - name: Build Spelling Streamlit image
         run: |
-          docker build -f spelling/Dockerfile.streamlit spelling/ \
-            -t ${{ secrets.GCP_ARTIFACT_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.GCP_REPOSITORY }}/streamlit:$GITHUB_SHA
+          docker build -f spelling/Dockerfile.spelling spelling/ \
+            -t ${{ secrets.GCP_ARTIFACT_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.GCP_REPOSITORY }}/spelling:$GITHUB_SHA
 
       - name: Push Docker image to Artifact Registry
         run: |
-          docker push ${{ secrets.GCP_ARTIFACT_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.GCP_REPOSITORY }}/streamlit:$GITHUB_SHA
+          docker push ${{ secrets.GCP_ARTIFACT_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.GCP_REPOSITORY }}/spelling:$GITHUB_SHA
 
   deploy:
     name: Deploy to Cloud Run
@@ -55,8 +55,8 @@ jobs:
 
       - name: Deploy to Cloud Run
         run: |
-          gcloud run deploy streamlit-service \
-            --image=${{ secrets.GCP_ARTIFACT_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.GCP_REPOSITORY }}/streamlit:$GITHUB_SHA \
+          gcloud run deploy spelling-streamlit-service \
+            --image=${{ secrets.GCP_ARTIFACT_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ secrets.GCP_REPOSITORY }}/spelling:$GITHUB_SHA \
             --platform=managed \
             --region=${{ secrets.GCP_REGION }} \
             --memory=2Gi \
