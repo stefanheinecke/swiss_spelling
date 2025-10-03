@@ -156,7 +156,7 @@ def setup_round():
     st.session_state.feedback_shown = False
     st.session_state.used_prompts.append(prompt)
 
-max_rounds = 2
+max_rounds = 10
 
 # Setup first round
 if st.session_state.current_prompt is None and st.session_state.round <= max_rounds:
@@ -225,11 +225,8 @@ def save_result_to_bigquery():
         "required_time": duration_str,
         "run_date": datetime.now(timezone.utc).date().isoformat()
     }
-    st.markdown(row)
-    st.markdown(f"{project_id}.{dataset_id}.{table_id}")
     errors = client.insert_rows_json(f"{project_id}.{dataset_id}.{table_id}", [row])
     if errors:
-        st.error(errors)
         st.error("❌ Fehler beim Speichern in BigQuery")
     else:
         st.success("✅ Ergebnis gespeichert!")
@@ -238,6 +235,7 @@ def save_result_to_bigquery():
 if st.session_state.round > max_rounds:
     if "result_saved" not in st.session_state:
         save_result_to_bigquery()
+        show_leaderboard()
     st.session_state.result_saved = True
 
     st.header("🏁 Spiel vorbei")
