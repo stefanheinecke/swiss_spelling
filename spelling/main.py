@@ -235,8 +235,8 @@ def save_result_to_bigquery():
 if st.session_state.round > max_rounds:
     if "result_saved" not in st.session_state:
         save_result_to_bigquery()
-        show_leaderboard()
-    st.session_state.result_saved = True
+        st.session_state.result_saved = True
+        st.rerun()  # triggers sidebar refresh
 
     st.header("🏁 Spiel vorbei")
     st.markdown(f"**Punkte:** {st.session_state.score}")
