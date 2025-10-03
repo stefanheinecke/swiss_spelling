@@ -1,6 +1,8 @@
 import streamlit as st
 import random
 import time
+from google.cloud import bigquery
+import os
 
 # Word bank: prompt → correct + distractors
 word_bank = {
@@ -77,6 +79,63 @@ if "round" not in st.session_state:
     st.session_state.feedback_shown = False
     st.session_state.used_prompts = []
 
+# Spielername und Tierkopf
+animal_emojis = {
+    "hund": "🐶",
+    "katze": "🐱",
+    "fuchs": "🦊",
+    "bär": "🐻",
+    "panda": "🐼",
+    "löwe": "🦁",
+    "frosch": "🐸",
+    "affe": "🐵",
+    "pinguin": "🐧",
+    "huhn": "🐔",
+}
+
+# Umgekehrtes Mapping: Emoji → Tiername
+emoji_to_name = {v: k for k, v in animal_emojis.items()}
+
+st.sidebar.header("👤 Spielerprofil")
+player_name = st.sidebar.text_input("Dein Name", value="Gast")
+animal_options = list(animal_emojis.items())
+selected = st.sidebar.selectbox("Wähle deinen Tierkopf", animal_options, format_func=lambda x: x[1])
+
+# Ergebnis:
+st.session_state.player_name = player_name
+st.session_state.animal = selected[0]       # z. B. "hund"
+st.session_state.animal_icon = selected[1]  # z. B. "🐶"
+
+project_id = "my-sh-project-398715"
+dataset_id = "spelling_data"
+table_id = "ranking"
+
+client = bigquery.Client(project=project_id)
+
+def fetch_leaderboard():
+    query = f"""
+        SELECT user, animal, percentage, required_time
+        FROM `{project_id}.{dataset_id}.{table_id}`
+        ORDER BY percentage DESC, required_time ASC
+        LIMIT 5
+    """
+    return client.query(query).to_dataframe()
+
+
+def show_leaderboard():
+    df = fetch_leaderboard()
+    df["Ergebnis"] = df["percentage"].astype(str)
+    df["Zeit"] = df["required_time"]
+    df["Spieler"] = df["animal"].map(animal_emojis) + " " + df["user"]
+
+    display_df = df[["Spieler", "Ergebnis", "Zeit"]]
+
+    st.sidebar.markdown("---")
+    st.sidebar.subheader("🏆 Rangliste")
+    st.sidebar.dataframe(display_df.reset_index(drop=True), use_container_width=True, hide_index=True)
+
+show_leaderboard()
+
 def setup_round():
     available_prompts = [p for p in word_bank.keys() if p not in st.session_state.used_prompts]
     if not available_prompts:
@@ -112,6 +171,7 @@ st.title("Swiss German Quiz")
 
 current_display_round = min(st.session_state.round, max_rounds)
 st.markdown(f"**Punkte:** {st.session_state.score} (Frage {current_display_round} von {max_rounds})")
+st.markdown(f"### {st.session_state.animal_icon} {st.session_state.player_name} spielt gerade")
 
 # Game loop
 if st.session_state.round <= max_rounds and st.session_state.current_prompt is not None:
