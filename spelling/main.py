@@ -4,11 +4,11 @@ import time
 
 # Word bank: prompt → correct answer
 word_bank = {
-    "Küchenschränkchen": "chuchichäschtli",
-    "schnell": "gschwind",
-    "Person, die immer friert": "gfrörli",
-    "Schnecke": "gschnägg",
-    "Hallo": "grüezi",
+    "chuchichäschtli": ["Küchenschränkchen", "Uhrenkästchen"],
+    "gschwind": ["schnell", "windig"],
+    "gfrörli": ["Person, die immer friert", "Eis"],
+    "gschnägg": ["Schnecke", "schick"],
+    "grüezi": ["Hallo", "Auf Wiedersehen"],
 }
 
 joke_prizes = [
@@ -40,6 +40,7 @@ def setup_round():
     correct = word_bank[prompt]
     distractors = random.sample([v for v in word_bank.values() if v != correct], 2)
     options = distractors + [correct]
+    options = word_bank.values()
     random.shuffle(options)
 
     st.session_state.current_prompt = prompt
@@ -53,13 +54,13 @@ if st.session_state.current_prompt is None and st.session_state.round <= 5:
     setup_round()
 
 st.markdown(
-    "<div style='text-align: center'><img src='https://upload.wikimedia.org/wikipedia/commons/f/f3/Flag_of_Switzerland.svg' width='100'></div>",
+    "<div style='text-align: center'><img src='https://upload.wikimedia.org/wikipedia/commons/f/f3/Flag_of_Switzerland.svg' width='50'></div>",
     unsafe_allow_html=True
 )
 
-st.title("Swiss German Challenge")
-st.subheader(f"Frage {st.session_state.round} von 5")
-st.markdown(f"**Punkte:** {st.session_state.score}")
+st.title("Swiss German Quiz")
+#st.subheader(f"Frage {st.session_state.round} von 5")
+st.markdown(f"**Punkte:** {st.session_state.score} (Frage {st.session_state.round} von 5)")
 
 # Game loop
 if st.session_state.round <= 5:
