@@ -2,13 +2,60 @@ import streamlit as st
 import random
 import time
 
-# Word bank: prompt → correct answer
+# Word bank: prompt → correct + distractors
 word_bank = {
-    "chuchichäschtli": ["Küchenschränkchen", "Uhrenkästchen"],
-    "gschwind": ["schnell", "windig"],
-    "gfrörli": ["Person, die immer friert", "Eis"],
-    "gschnägg": ["Schnecke", "schick"],
-    "grüezi": ["Hallo", "Auf Wiedersehen"],
+    "chuchichäschtli": {"correct": "Küchenschränkchen", "distractors": ["Uhrenkästchen"]},
+    "gschwind": {"correct": "schnell", "distractors": ["windig"]},
+    "gfrörli": {"correct": "Person, die immer friert", "distractors": ["Eis"]},
+    "gschnägg": {"correct": "Schnecke", "distractors": ["schick"]},
+    "grüezi": {"correct": "Hallo", "distractors": ["Auf Wiedersehen"]},
+    "zämehöckle": {"correct": "sich zusammensetzen", "distractors": ["zusammenbrechen"]},
+    "lisme": {"correct": "stricken", "distractors": ["lesen"]},
+    "plöfferä": {"correct": "angeben", "distractors": ["platzen"]},
+    "tätsch": {"correct": "Schlag", "distractors": ["Tanz"]},
+    "verhebe": {"correct": "funktionieren", "distractors": ["verheiraten"]},
+    "schpänne": {"correct": "zusammenarbeiten", "distractors": ["sich verspannen"]},
+    "schmöcke": {"correct": "riechen", "distractors": ["schmücken"]},
+    "gäbig": {"correct": "praktisch", "distractors": ["großzügig"]},
+    "rüüdig": {"correct": "sehr", "distractors": ["wütend"]},
+    "gmüetlich": {"correct": "gemütlich", "distractors": ["müde"]},
+    "schlönz": {"correct": "Rotz", "distractors": ["Schlitz"]},
+    "tüpflischiisser": {"correct": "Pedant", "distractors": ["Kritiker"]},
+    "güsel": {"correct": "Abfall", "distractors": ["Gemüse"]},
+    "büez": {"correct": "Arbeit", "distractors": ["Besen"]},
+    "chnorzi": {"correct": "Mürrischer Mensch", "distractors": ["Knopf"]},
+    "giggerig": {"correct": "gierig", "distractors": ["kichernd"]},
+    "schludrig": {"correct": "nachlässig", "distractors": ["schlammig"]},
+    "fätzä": {"correct": "herumrennen", "distractors": ["zerreißen"]},
+    "tschäderä": {"correct": "klappern", "distractors": ["reden"]},
+    "schwubblä": {"correct": "herumzappeln", "distractors": ["schwimmen"]},
+    "tätschä": {"correct": "klatschen", "distractors": ["tanzen"]},
+    "güggs": {"correct": "Hahn", "distractors": ["Gurke"]},
+    "pfusä": {"correct": "schlafen", "distractors": ["arbeiten"]},
+    "schlürfä": {"correct": "schlürfen", "distractors": ["schlurfen"]},
+    "gfrässig": {"correct": "gefräßig", "distractors": ["frech"]},
+    "schlönzlig": {"correct": "rotzig", "distractors": ["schlank"]},
+    "bögg": {"correct": "Strohfigur", "distractors": ["Berg"]},
+    "schpienzä": {"correct": "spionieren", "distractors": ["spielen"]},
+    "schlänggä": {"correct": "schlängeln", "distractors": ["schlagen"]},
+    "schwytzä": {"correct": "schwitzen", "distractors": ["schweigen"]},
+    "gümmelä": {"correct": "herumtrödeln", "distractors": ["springen"]},
+    "schlufi": {"correct": "Langweiler", "distractors": ["Schlupfloch"]},
+    "rüffä": {"correct": "tadeln", "distractors": ["rufen"]},
+    "schmöisä": {"correct": "werfen", "distractors": ["schmieren"]},
+    "tätschlig": {"correct": "robust", "distractors": ["tänzerisch"]},
+    "bsetzistei": {"correct": "Pflasterstein", "distractors": ["Besenstiel"]},
+    "zägg": {"correct": "Schlag", "distractors": ["Zacke"]},
+    "schlunz": {"correct": "Dreck", "distractors": ["Schlupf"]},
+    "güx": {"correct": "kurzer Blick", "distractors": ["Guss"]},
+    "schpöitzä": {"correct": "spucken", "distractors": ["spritzen"]},
+    "schwubblig": {"correct": "zappelig", "distractors": ["schwammig"]},
+    "gnusch": {"correct": "Durcheinander", "distractors": ["Knoten"]},
+    "tschumpel": {"correct": "ungeschickter Mensch", "distractors": ["Schimpanse"]},
+    "gümmel": {"correct": "Trödler", "distractors": ["Gummi"]},
+    "tschäderlig": {"correct": "klappernd", "distractors": ["tänzelnd"]},
+    "pfuslig": {"correct": "schlampig", "distractors": ["schläfrig"]},
+    "schwytzig": {"correct": "verschwitzt", "distractors": ["schweizerisch"]},
 }
 
 joke_prizes = [
@@ -37,14 +84,15 @@ def setup_round():
         return
 
     prompt = random.choice(available_prompts)
-    correct = word_bank[prompt]
-    distractors = random.sample([v for v in word_bank.values() if v != correct], 2)
-    options = distractors + [correct]
-    options = word_bank.values()
+    entry = word_bank[prompt]
+    correct_answer = entry["correct"]
+    distractors = entry["distractors"]
+
+    options = [correct_answer] + distractors
     random.shuffle(options)
 
     st.session_state.current_prompt = prompt
-    st.session_state.correct_answer = correct
+    st.session_state.correct_answer = correct_answer
     st.session_state.options = options
     st.session_state.feedback_shown = False
     st.session_state.used_prompts.append(prompt)
@@ -59,7 +107,6 @@ st.markdown(
 )
 
 st.title("Swiss German Quiz")
-#st.subheader(f"Frage {st.session_state.round} von 5")
 st.markdown(f"**Punkte:** {st.session_state.score} (Frage {st.session_state.round} von 5)")
 
 # Game loop
@@ -72,8 +119,7 @@ if st.session_state.round <= 5:
     st.write("")
     st.write("")
 
-    # Show buttons for each option
-    cols = st.columns(3)
+    cols = st.columns(len(st.session_state.options))
     for i, option in enumerate(st.session_state.options):
         if cols[i].button(option) and not st.session_state.feedback_shown:
             st.session_state.feedback_shown = True
@@ -87,7 +133,6 @@ if st.session_state.round <= 5:
 
             st.session_state.history.append((st.session_state.current_prompt, option))
 
-            # Delay and rerun
             with st.empty():
                 time.sleep(2)
                 st.session_state.round += 1
