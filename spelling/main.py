@@ -96,6 +96,10 @@ animal_emojis = {
 # Umgekehrtes Mapping: Emoji → Tiername
 emoji_to_name = {v: k for k, v in animal_emojis.items()}
 
+adsense_code = """<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9614544934238374"
+     crossorigin="anonymous"></script>"""
+st.markdown(adsense_code, unsafe_allow_html=True)
+
 st.sidebar.header("👤 Spielerprofil")
 player_name = st.sidebar.text_input("Dein Name", value="Gast")
 animal_options = list(animal_emojis.items())
